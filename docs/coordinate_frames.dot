@@ -1,0 +1,99 @@
+digraph G {
+  rankdir=LR;
+  fontname="PingFang SC, Microsoft YaHei, sans-serif";
+  node [shape=box, style="rounded,filled", fillcolor="#f8f9fa", fontname="ui-monospace, monospace", fontsize=11];
+  edge [fontname="PingFang SC, Microsoft YaHei, sans-serif", fontsize=10, color="#555555"];
+
+  // 原始输入侧
+  subgraph cluster_raw {
+    label="PICO / MANUS 原始输出";
+    style=filled;
+    color="#e8f4fd";
+    fillcolor="#e8f4fd";
+    node [fillcolor="#ffffff"];
+
+    pico_raw_lh [label="PICO raw\n(LH: X右 Y上 Z前)"];
+    manus_raw [label="MANUS raw nodes\n(SDK 世界系)"];
+  }
+
+  // PICO world 层
+  subgraph cluster_pico_world {
+    label="PICO tracking world (导出用)";
+    style=filled;
+    color="#fff4e6";
+    fillcolor="#fff4e6";
+    node [fillcolor="#ffffff"];
+
+    pico_world [label="pico_world\n(RH: X前 Y左 Z上, m)", fillcolor="#fff3cd"];
+    head_world [label="head_pose\n(世界系)"];
+    lctrl_world [label="left_ctrl\n(世界系)"];
+    rctrl_world [label="right_ctrl\n(世界系)"];
+    lw_world [label="left_wrist_pose\n(世界系)", fillcolor="#d4edda"];
+    rw_world [label="right_wrist_pose\n(世界系)", fillcolor="#d4edda"];
+  }
+
+  // 手局部
+  subgraph cluster_hand {
+    label="手部关节";
+    style=filled;
+    color="#f0f0f0";
+    fillcolor="#f0f0f0";
+    node [fillcolor="#ffffff"];
+
+    hand_local [label="*_hand_joints\n(腕局部系: 相对 MANUS 腕根)", fillcolor="#d1ecf1"];
+  }
+
+  // Retarget / 机器人侧
+  subgraph cluster_retarget {
+    label="Retarget / 机器人";
+    style=filled;
+    color="#f5e6ff";
+    fillcolor="#f5e6ff";
+    node [fillcolor="#ffffff"];
+
+    head_rel [label="neck_yaw_link\n(头-relative)", fillcolor="#ffe6e6"];
+    lw_rel [label="left_wrist_rel\n(头-relative)"];
+    rw_rel [label="right_wrist_rel\n(头-relative)"];
+    robot_base [label="robot_base\n(需外部标定)", fillcolor="#ffe6e6", style="rounded,filled,dashed"];
+    ee_target [label="EE target\n(IK / Retarget)"];
+  }
+
+  // 相机
+  subgraph cluster_camera {
+    label="VST 相机";
+    style=filled;
+    color="#e6f7ff";
+    fillcolor="#e6f7ff";
+    node [fillcolor="#ffffff"];
+
+    cam_left [label="left_eye\n(optical frame)"];
+    cam_right [label="right_eye\n(optical frame)"];
+  }
+
+  // PICO 转换链
+  pico_raw_lh -> pico_world [label="convert_lh_to_rh\napply_pico_to_robot_axes\n(pico_retarget.py)"];
+  pico_world -> head_world [label="Head 位姿"];
+  pico_world -> lctrl_world [label="left Controller"];
+  pico_world -> rctrl_world [label="right Controller"];
+
+  // 手腕转换
+  lctrl_world -> lw_world [label="T_calib (ego 默认)\n或 Q_CTRL_TO_WRIST + T_calib (teleop)\n(export_dataset.py)"];
+  rctrl_world -> rw_world [label="同上"];
+
+  // MANUS 手
+  manus_raw -> hand_local [label="hand_local()\n去掉腕根世界朝向\n(export_dataset.py)"];
+
+  // 头-relative
+  head_world -> head_rel [label="head^-1\n(pico_retarget.py)"];
+  lw_world -> lw_rel [label="head^-1"];
+  rw_world -> rw_rel [label="head^-1"];
+
+  // 机器人
+  pico_world -> robot_base [label="T_pico_world_to_base\n(需标定，当前未做)", style=dashed, color="#b35c00"];
+  robot_base -> ee_target [label="IK\n(Robot 7-DOF arm)"];
+  lw_world -> ee_target [label="可作为末端目标\n(需坐标系对齐)", style=dashed, color="#555555"];
+
+  // 相机
+  head_world -> cam_left [label="相机外参\n(config/pico_cam)"];
+  head_world -> cam_right [label="相机外参"];
+}

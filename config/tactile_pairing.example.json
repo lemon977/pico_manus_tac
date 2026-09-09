@@ -1,0 +1,42 @@
+{
+  "schema": "pico_tactile_pairing_v1",
+  "pairing_method": "manual_left_press_right_by_exclusion_each_start",
+  "sides": {
+    "left": {
+      "manus_glove_id": "1001",
+      "manus_expected_side": "left",
+      "physical_profile": "hs13_five_fingertip_4x8_four_4x7_v1"
+    },
+    "right": {
+      "manus_glove_id": "1002",
+      "manus_expected_side": "right",
+      "physical_profile": "hs13_five_fingertip_4x8_four_4x7_v1"
+    }
+  },
+  "profiles": {
+    "hs13_five_fingertip_4x8_four_4x7_v1": {
+      "kind": "five_fingertip_arrays_4x8_four_4x7",
+      "wire_grid": {"rows": 24, "cols": 16, "active_count": 369,
+        "cellmap_sha256": "a323dd790069add5e187934092ea403d9012f199fa24150a1198eadd993ea929"},
+      "physical_finger_count": 5,
+      "nominal_fingertip_shape": [4, 8],
+      "effective_non_thumb_shape": [4, 7],
+      "non_thumb_dead_physical_column": 7,
+      "physical_active_count": 144,
+      "palm_present": false,
+      "mask_verified": true,
+      "post_decode_invalid_cells": [
+        [23, 4], [23, 5], [23, 6], [23, 7],
+        [15, 0], [15, 1], [15, 2], [15, 3],
+        [15, 12], [15, 13], [15, 14], [15, 15],
+        [23, 8], [23, 9], [23, 10], [23, 11]
+      ],
+      "note": "Replace both example MANUS glove IDs before collection."
+    }
+  },
+  "_meta": {
+    "manus_identity_basis": "SDK uint32 glove_id",
+    "tactile_identity_limit": "Identify left by press on every service start; bind the remaining verified device as right.",
+    "transport_policy": "COM port, USB location and candidate order are session observations only."
+  }
+}

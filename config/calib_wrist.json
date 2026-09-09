@@ -1,0 +1,37 @@
+{
+  "_meta": {
+    "note": "T_calib: wrist_pose = ctrl_world∘T_calib (ego简约定,无Q180); 标定姿态=掌心朝下手指朝前(手指=+X,手背=+Z); pos=手柄局部系前/左/上(米)",
+    "pose": "forward",
+    "source_pico": "pico_wc1.jsonl",
+    "source_manus": "manus_wc1.jsonl",
+    "window_frames": 110,
+    "window_s": 1.514,
+    "mean_ang_speed_rad_per_frame": 0.00104
+  },
+  "left": {
+    "pos": [
+      0.08,
+      0.04,
+      -0.13
+    ],
+    "quat": [
+      -0.033484,
+      -0.119384,
+      0.206717,
+      0.970512
+    ]
+  },
+  "right": {
+    "pos": [
+      0.08,
+      -0.04,
+      -0.13
+    ],
+    "quat": [
+      0.039011,
+      -0.204108,
+      -0.083368,
+      0.974612
+    ]
+  }
+}

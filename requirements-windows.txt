@@ -1,0 +1,8 @@
+# Windows 原生采集、离线对齐、HDF5 导出与验收工具依赖。
+numpy>=1.26,<3
+scipy>=1.11,<2
+h5py>=3.10,<4
+opencv-python>=4.8,<5
+matplotlib>=3.8,<4
+pyserial>=3.5,<4
+meshcat>=0.3.2,<1
