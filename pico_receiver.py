@@ -431,6 +431,16 @@ PRINT_HZ0 = True              # print_hz<=0 时事件直接滚屏打印
 REDRAW_STARTED = False
 
 
+def _console_print(text, *, flush=True):
+    """Print status text without letting a legacy Windows code page stop capture."""
+    try:
+        print(text, flush=flush)
+    except UnicodeEncodeError:
+        encoding = getattr(sys.stdout, "encoding", None) or "utf-8"
+        safe_text = str(text).encode(encoding, errors="backslashreplace").decode(encoding)
+        print(safe_text, flush=flush)
+
+
 def event(msg):
     """记录一条事件: 重绘模式下进事件区, 非重绘模式直接打印"""
     global REDRAW_STARTED
@@ -438,7 +448,7 @@ def event(msg):
     with state_lock:
         EVENTS.append(line)
     if PRINT_HZ0 or not REDRAW_STARTED:
-        print(line, flush=True)
+        _console_print(line)
 
 
 def render_status(text):
@@ -451,7 +461,7 @@ def render_status(text):
     with state_lock:
         ev = list(EVENTS)
     out = (text + "\n\n-- 最近事件 --\n" + ("\n".join(ev) if ev else "(无)"))
-    print("\033[H\033[J" + out, flush=True)
+    _console_print("\033[H\033[J" + out)
 
 
 def pack_frame(head, cmd, payload: bytes) -> bytes:

@@ -64,8 +64,10 @@ class Hs13PhysicalLayoutTests(unittest.TestCase):
                             coord_to_wire[(r0 + tip_to_base, c0 + across)],
                         )
 
-    def test_default_pairing_profile_matches_physical_layout(self):
-        config = load_pairing_config(ROOT / "config" / "tactile_pairing.json")
+    def test_example_pairing_profile_matches_physical_layout(self):
+        config = load_pairing_config(
+            ROOT / "config" / "tactile_pairing.example.json"
+        )
         profile_name = config.side_profiles["left"]
         self.assertEqual(profile_name, config.side_profiles["right"])
         profile = config.profiles[profile_name]
