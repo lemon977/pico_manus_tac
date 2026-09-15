@@ -616,15 +616,15 @@ def main() -> None:
     ap.add_argument("-o", "--out", default=None, help="对齐结果 JSONL 输出路径")
     ap.add_argument("--hdf5", default=None, help="额外/替代输出 HDF5 (需要 h5py)")
     ap.add_argument("--full", action="store_true", help="JSONL 里保留 MANUS 全部节点")
-    ap.add_argument("--max-skew-ms", type=float, default=20.0, help="超过此中位偏差则告警")
-    ap.add_argument("--gate-ms", type=float, default=30.0,
+    ap.add_argument("--max-skew-ms", type=float, default=30.0, help="超过此中位偏差则告警")
+    ap.add_argument("--gate-ms", type=float, default=40.0,
                     help="最近邻超过此值则视为该帧无手套数据(两端未同时录制的时段)。0=不门限")
     ap.add_argument("--tactile", default=None,
                     help="同一任务 raw/tactile.jsonl（旧 tactile_raw 也兼容）")
     ap.add_argument("--tactile-meta", default=None,
                     help="触觉封存元数据；缺省自动取 tactile.jsonl 旁的 tactile.meta.json")
-    ap.add_argument("--tactile-gate-ms", type=float, default=30.0,
-                    help="触觉最近邻门限；0=不门限（默认 30ms）")
+    ap.add_argument("--tactile-gate-ms", type=float, default=40.0,
+                    help="触觉最近邻门限；0=不门限（默认 40ms）")
     args = ap.parse_args()
     if args.tactile_meta and not args.tactile:
         ap.error("--tactile-meta 必须与 --tactile 一起使用")

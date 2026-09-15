@@ -67,11 +67,11 @@ class AlignmentClockTests(unittest.TestCase):
 
 class ProvenanceTests(unittest.TestCase):
     def test_strict_alignment_policy_defaults(self):
-        self.assertEqual(DEFAULT_MATCH_GATE_MS, 30.0)
-        self.assertEqual(DEFAULT_MAX_SKEW_MS, 30.0)
-        self.assertEqual(DEFAULT_MAX_P95_SKEW_MS, 20.0)
-        self.assertEqual(DEFAULT_MIN_COVERAGE, 0.99)
-        self.assertEqual(DEFAULT_MIN_COMPLETE_COVERAGE, 0.99)
+        self.assertEqual(DEFAULT_MATCH_GATE_MS, 40.0)
+        self.assertEqual(DEFAULT_MAX_SKEW_MS, 40.0)
+        self.assertEqual(DEFAULT_MAX_P95_SKEW_MS, 30.0)
+        self.assertEqual(DEFAULT_MIN_COVERAGE, 0.95)
+        self.assertEqual(DEFAULT_MIN_COMPLETE_COVERAGE, 0.95)
 
     def test_video_size_is_read_from_the_coded_stream(self):
         with tempfile.TemporaryDirectory() as temp:

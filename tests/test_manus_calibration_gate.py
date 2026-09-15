@@ -6,11 +6,24 @@ from pathlib import Path
 from unittest.mock import patch
 
 from manus_collector import _calibration_file_info
+from export_dataset import failed_manus_calibration_sides
 from pico_record import _check_ready
 from session_layout import new_session_paths, write_manifest
 
 
 class ManusCalibrationGateTests(unittest.TestCase):
+    def test_export_calibration_gate_checks_both_sides_not_joint_selection(self):
+        evidence = {
+            "calibration": {
+                "left": {"sdk_applied": True},
+                "right": {"sdk_applied": True},
+            }
+        }
+        self.assertEqual(failed_manus_calibration_sides(evidence), [])
+
+        evidence["calibration"]["right"]["sdk_applied"] = False
+        self.assertEqual(failed_manus_calibration_sides(evidence), ["right"])
+
     def test_file_evidence_contains_sha256(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             path = Path(temp_dir) / "manus_left.mcal"

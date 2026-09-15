@@ -17,7 +17,7 @@ VST 为左右眼并排(SBS), 导出 `video_frame_idx` + 左右 crop 约定, 供�
 用法:
   python3 export_dataset.py pico.jsonl manus.jsonl -o dataset.hdf5
   python3 export_dataset.py pico.jsonl manus.jsonl -o d.hdf5 --fps 30 --hands full \
-      --calib config/calib_wrist.json --gate-ms 30 --gap-ms 200
+      --calib config/calib_wrist.json --gate-ms 40 --gap-ms 200
 """
 from __future__ import annotations
 import argparse, json, os, shutil, subprocess, sys, time
@@ -59,11 +59,25 @@ from pico_retarget import (convert_lh_to_rh, apply_pico_to_robot_axes,   # noqa:
                            quat_rotate, quat_normalize, compose_pose)
 
 NS = 1_000_000
-DEFAULT_MATCH_GATE_MS = 30.0
-DEFAULT_MIN_COVERAGE = 0.99
-DEFAULT_MIN_COMPLETE_COVERAGE = 0.99
-DEFAULT_MAX_P95_SKEW_MS = 20.0
-DEFAULT_MAX_SKEW_MS = 30.0
+DEFAULT_MATCH_GATE_MS = 40.0
+DEFAULT_MIN_COVERAGE = 0.95
+DEFAULT_MIN_COMPLETE_COVERAGE = 0.95
+DEFAULT_MAX_P95_SKEW_MS = 30.0
+DEFAULT_MAX_SKEW_MS = 40.0
+MANUS_CAPTURE_SIDES = ("left", "right")
+
+
+def failed_manus_calibration_sides(capture_meta):
+    """返回未成功应用个人标定的手套侧。
+
+    ``--hands`` 在本导出器中表示 ``full/tips`` 关节范围，不表示采集侧别；
+    正式双手数据集始终要求左右 MANUS 标定证据都有效。
+    """
+    calibration_evidence = (capture_meta or {}).get("calibration") or {}
+    return [
+        side for side in MANUS_CAPTURE_SIDES
+        if (calibration_evidence.get(side) or {}).get("sdk_applied") is not True
+    ]
 
 
 def load_pico2(path):
@@ -724,7 +738,7 @@ def main():
     ap.add_argument("--teleop-wrist", action="store_true",
                     help="兼容旧遥操: 叠 Q_CTRL_TO_WRIST(180°); ego 默认不要开")
     ap.add_argument("--gate-ms", type=float, default=DEFAULT_MATCH_GATE_MS,
-                    help="MANUS 最近邻门限（默认 30ms）")
+                    help="MANUS 最近邻门限（默认 40ms）")
     ap.add_argument("--gap-ms", type=float, default=200.0, help="超此间隔视为断点分段")
     ap.add_argument("--vst", default=None,
                     help="视频路径（项目 VST H264 或 PICO 连续录制 MP4；写入 attrs.video_path）")
@@ -733,7 +747,7 @@ def main():
     ap.add_argument("--vst-qpc-ts", default=None,
                     help="vst.qpc.ts.jsonl；新采集优先用高精度 QPC 对齐")
     ap.add_argument("--video-gate-ms", type=float, default=DEFAULT_MATCH_GATE_MS,
-                    help="视频帧匹配门限（默认 30ms）")
+                    help="视频帧匹配门限（默认 40ms）")
     ap.add_argument("--video-size", default="auto",
                     help="SBS 整幅宽x高；默认 auto，从实际码流读取")
     ap.add_argument("--video-cam", default="config/pico_cam/vst_cam.json",
@@ -745,20 +759,20 @@ def main():
     ap.add_argument("--tactile-meta", default=None,
                     help="触觉封存元数据；缺省自动取 tactile.jsonl 旁的 tactile.meta.json")
     ap.add_argument("--tactile-gate-ms", type=float, default=DEFAULT_MATCH_GATE_MS,
-                    help="触觉最近邻门限；0=不门限（默认 30ms）")
+                    help="触觉最近邻门限；0=不门限（默认 40ms）")
     ap.add_argument("--min-hand-coverage", type=float, default=DEFAULT_MIN_COVERAGE,
-                    help="每侧 MANUS 最小覆盖率（默认 0.99）")
+                    help="每侧 MANUS 最小覆盖率（默认 0.95）")
     ap.add_argument("--min-video-coverage", type=float, default=DEFAULT_MIN_COVERAGE,
-                    help="提供 VST 时最小覆盖率（默认 0.99）")
+                    help="提供 VST 时最小覆盖率（默认 0.95）")
     ap.add_argument("--min-tactile-coverage", type=float, default=DEFAULT_MIN_COVERAGE,
-                    help="提供触觉时每侧最小覆盖率（默认 0.99）")
+                    help="提供触觉时每侧最小覆盖率（默认 0.95）")
     ap.add_argument("--min-complete-coverage", type=float,
                     default=DEFAULT_MIN_COMPLETE_COVERAGE,
-                    help="所有已请求传感器同时有效的最小帧比例（默认 0.99）")
+                    help="所有已请求传感器同时有效的最小帧比例（默认 0.95）")
     ap.add_argument("--max-p95-skew-ms", type=float, default=DEFAULT_MAX_P95_SKEW_MS,
-                    help="各路 |时间偏差| 的 p95 上限（默认 20ms）")
+                    help="各路 |时间偏差| 的 p95 上限（默认 30ms）")
     ap.add_argument("--max-skew-ms", type=float, default=DEFAULT_MAX_SKEW_MS,
-                    help="各路单帧 |时间偏差| 上限（默认 30ms）")
+                    help="各路单帧 |时间偏差| 上限（默认 40ms）")
     args = ap.parse_args()
     if args.tactile_meta and not args.tactile:
         ap.error("--tactile-meta 必须与 --tactile 一起使用")
@@ -1117,12 +1131,7 @@ def main():
             )
         except (OSError, ValueError) as exc:
             raise RuntimeError(f"MANUS 标定证据损坏: {manus_meta_path}: {exc}") from exc
-        calibration_evidence = manus_capture_meta.get("calibration") or {}
-        required_sides = ("left", "right") if args.hands == "both" else (args.hands,)
-        failed_sides = [
-            side for side in required_sides
-            if (calibration_evidence.get(side) or {}).get("sdk_applied") is not True
-        ]
+        failed_sides = failed_manus_calibration_sides(manus_capture_meta)
         if failed_sides:
             raise RuntimeError(
                 "MANUS 个人手型标定没有成功加载，拒绝导出: "

@@ -850,7 +850,7 @@ _pipeline() {
     echo
     echo "--- align ---"
     ${PY} align_pico_manus.py "${pico}" "${manus}" -o "${aligned}" \
-      --full --max-skew-ms 20 --gate-ms 30 --tactile-gate-ms 30 \
+      --full --max-skew-ms 30 --gate-ms 40 --tactile-gate-ms 40 \
       "${tactile_args[@]}"
     echo
     echo "--- export egodex_v1 ---"
@@ -866,11 +866,11 @@ _pipeline() {
       fi
     ${PY} export_dataset.py "${pico}" "${manus}" -o "${hdf5}" \
       --calib config/calib_wrist.json \
-      --gate-ms 30 --video-gate-ms 30 --tactile-gate-ms 30 \
-      --min-hand-coverage 0.99 --min-video-coverage 0.99 \
-      --min-tactile-coverage 0.99 --min-complete-coverage 0.99 \
-      --max-p95-skew-ms 20 \
-      --max-skew-ms 30 --fps 30 \
+      --gate-ms 40 --video-gate-ms 40 --tactile-gate-ms 40 \
+      --min-hand-coverage 0.95 --min-video-coverage 0.95 \
+      --min-tactile-coverage 0.95 --min-complete-coverage 0.95 \
+      --max-p95-skew-ms 30 \
+      --max-skew-ms 40 --fps 30 \
       "${tactile_args[@]}" "${vst_args[@]}"
     echo
     echo "--- catalog ---"

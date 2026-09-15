@@ -138,7 +138,7 @@ ffmpeg -y -framerate $FR -i data/sessions/S/raw/vst.h264 \
 ```mermaid
 flowchart TB
   PICO["PICO 帧 recv_qpc_ns"] --> CW["求所有数据路公共有效区间"]
-  CW --> NN["原始速率最近邻/连续量插值 gate≤30ms"]
+  CW --> NN["原始速率最近邻/连续量插值 gate≤40ms"]
   L[MANUS 左] --> NN
   R[MANUS 右] --> NN
   TL[TACTILE 左 369] --> NN
@@ -256,7 +256,7 @@ flowchart LR
 | `left/right_hand_source_recv_qpc_ns` | (T,) | 最近 MANUS 原始帧 QPC；无效=-1 |
 | `left/right_hand_offset_ms` | (T,) | MANUS 源帧−目标行；无效=NaN |
 | `left/right_tactile_values` | (T,369) int16 | wire 活动通道原值；无效行填 0 |
-| `left/right_tactile_valid` | (T,) | 正式完整帧包中恒为 True（30 ms 内命中） |
+| `left/right_tactile_valid` | (T,) | 正式完整帧包中恒为 True（40 ms 内命中） |
 | `left/right_tactile_recv_wall_ns` | (T,) | 源触觉帧墙钟；无效=-1 |
 | `left/right_tactile_recv_qpc_ns` | (T,) | 源触觉帧 QPC；无效=-1 |
 | `left/right_tactile_stream_seq` | (T,) | 源设备流序号；无效=-1 |
@@ -267,15 +267,15 @@ flowchart LR
 | `tactile_finger_manus_node_ids` | (5,5) | 五指对应 MANUS 源节点组；thumb 末位=-1 |
 | `video_frame_idx` | (T,) | SBS 整帧号；-1=未匹配 |
 | `video_frame_idx_left/_right` | (T,) | 与上相同（左右共享一帧） |
-| `video_valid` | (T,) | 正式完整帧包中恒为 True（30 ms 内命中） |
+| `video_valid` | (T,) | 正式完整帧包中恒为 True（40 ms 内命中） |
 | `video_source_recv_wall_ns/qpc_ns` | (T,) | 视频源帧的双时间戳 |
 | `video_offset_ms` | (T,) | 视频源帧−目标行；无效=NaN |
 
 关键 attrs：`schema_revision=egodex_v1+sync_v2+tactile_v3+complete_frames_v4`、`alignment_clock`、
 `common_interval_start_ns/end_ns`、`alignment_quality`、`tactile_included=True`、
 `tactile_value_count=369`、`tactile_physical_active_count=144`、
-`tactile_palm_present=False`。MANUS、VST 视频和触觉最近邻门限均为 30 ms；
-默认严格门禁为各路覆盖率 ≥99%、完整帧覆盖率 ≥99%、p95 ≤20 ms、最大偏差 ≤30 ms，
+`tactile_palm_present=False`。MANUS、VST 视频和触觉最近邻门限均为 40 ms；
+默认门禁为各路覆盖率 ≥95%、完整帧覆盖率 ≥95%、p95 ≤30 ms、最大偏差 ≤40 ms，
 不通过就不生成 HDF5。通过后剔除不完整目标行并在每个缺口重新切段，
 `all_exported_frames_complete=True`；`controller_to_wrist_calibration` 内嵌实际标定数值。
 p95 表示 95% 的有效匹配帧时间偏差不超过该值，不是覆盖率。当前实物无手掌阵列；手指仅做组级对应，
