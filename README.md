@@ -1,5 +1,19 @@
 <div align="center">
 
+# PICO × MANUS × Tactile | Capture Platform
+
+**PICO、MANUS 与触觉阵列的多模态同步采集、质量检查和 HDF5 导出。**
+
+`PICO · MANUS · Tactile · QA · HDF5`
+
+> 项目展示风格：数据平台介绍 · 下方保留原有工程文档、状态与安全约束。
+
+</div>
+
+---
+
+<div align="center">
+
 # PICO × MANUS × Tactile Capture
 
 **面向具身智能与第一视角操作研究的多模态采集、同步、质检与导出工具链**
